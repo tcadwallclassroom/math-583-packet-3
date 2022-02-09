@@ -1,0 +1,30 @@
+---
+title: "Packet 3 - Tidying Data and More Visulatizations"
+knit: (function(input_file, encoding) {
+  out_dir <- 'html';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+author: "Todd CadwalladerOlsker"
+date: "*Last updated:* `r Sys.Date()`"
+output:
+  rmdformats::downcute:
+    downcute_theme: "chaos"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, eval = FALSE)
+library(rmdformats)
+library(openintro)
+library(tidyverse)
+```
+
+## Tidying Data
+
+So far, we've been using the `openintro` data sets, which are great in may ways because they have already been *tidied*. That is, the data has been collected into a frame in such a way that it is easy for us to use.
+
+Many data sets take some work to tidy up. There may be variables we want to ignore, missing values we need to deal with, and so on. 
+
+For this exercise, read [this article](https://web.archive.org/web/20160223192726/https://www.nytimes.com/2015/12/06/opinion/sunday/let-math-save-our-democracy.html). As an activity, I'd like to  recreate the mean-median difference for the 2012 Pennsylvania House election.
+
+Start with this link: [download the results of the House elections from 1946-2020](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IG0UN2).
