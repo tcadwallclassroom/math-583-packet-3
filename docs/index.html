@@ -168,7 +168,7 @@ house_2012_dem_reduced &lt;- house_2012_dem[, c(4,22)]
 house_2012_dem_reduced &lt;- 
   house_2012_dem_reduced %&gt;%
   group_by(dist_id) %&gt;%
-  summarise_each(funs(sum))
+  summarise(dem_votes = sum(dem_votes, na.rm = T))
 
 
 house_2012_rep &lt;- 
@@ -206,19 +206,18 @@ mean_dem_pct_PA &lt;- mean(house_2012_PA$pct_dem_votes)</code></pre>
 <div id="more-visualizations" class="section level2">
 <h2>More Visualizations</h2>
 <p>Now, let’s make some more plots. We can make a histogram again:</p>
-<pre class="r"><code>house_2012_PA %&gt;% 
+<pre class="r"><code>statsholder &lt;- data.frame(stat = c(&quot;Median&quot;,
+                                     &quot;Mean&quot;),
+                          value = c(median_dem_pct_PA,
+                                     mean_dem_pct_PA))
+
+house_2012_PA %&gt;% 
   ggplot(aes(x = pct_dem_votes)) +
+  scale_color_brewer(palette = &quot;Dark2&quot;) +
   geom_histogram(binwidth=1, color = &quot;black&quot;, fill = &quot;blue&quot;) + 
-  geom_vline(aes(xintercept = median_dem_pct_PA, 
-                 color = &quot;Median&quot;,
-                 linetype = &quot;Median&quot;), 
-             show.legend = T) +
-  geom_vline(aes(xintercept = mean_dem_pct_PA, 
-                 color = &quot;Mean&quot;,
-                 linetype = &quot;Mean&quot;), 
-             show.legend = T) +
-  scale_color_manual(values = c(&quot;Median&quot;=&quot;red&quot;, &quot;Mean&quot;=&quot;forestgreen&quot;)) +
-  scale_linetype_manual(values=c(&quot;Median&quot; = &quot;twodash&quot;, &quot;Mean&quot; = &quot;dotted&quot;)) +
+  geom_vline(data=statsholder ,aes(xintercept = value,
+                               linetype = stat,
+                               color = stat),size=1) +
   labs(title = &quot;Percentage of Democratic votes by district&quot;,
        subtitle = &quot;2012 Pennsylvania House race&quot;, 
        y = NULL,
@@ -260,9 +259,18 @@ mean_dem_pct_PA &lt;- mean(house_2012_PA$pct_dem_votes)</code></pre>
 </div>
 <div id="to-do" class="section level2">
 <h2>To Do:</h2>
-<p>Go to (<a href="https://www.ncdc.noaa.gov/cdo-web/datasets" class="uri">https://www.ncdc.noaa.gov/cdo-web/datasets</a>) and download a “Global Summary of the Month” data set. Select data that goes back at least 20 years, longer if possible, and search for a station with good data. (Airports are usually good for weather data.) When you check out your data, you’ll be allowed to select variables: Choose variables for maximum temperature, number of days with max temp. above 70, and number of days with max temp above 90. You can also select other variables if you are interested. Be sure to download your data as a .csv file, not .pdf.</p>
+<p>Go to (<a href="https://www.ncdc.noaa.gov/cdo-web/datasets" class="uri">https://www.ncdc.noaa.gov/cdo-web/datasets</a>) and download a “Global Summary of the Month” data set. Select data that goes back at least 20 years, longer if possible, and search for a station with good data. (Airports are usually good for weather data.) When you check out your data, you’ll be allowed to select variables: Choose variables for maximum temperature (TMAX), number of days with max temp. above 70 (DX70), and number of days with max temp above 90 (DX90). You can also select other variables if you are interested. Be sure to download your data as a .csv file.</p>
 <p>You’ll need to provide your email address, and the website will send you a link to download your data.</p>
-<p>Once you have your data in hand, use the techniques to modify your data in the following ways:</p>
+<p>Once you have your data in hand, use the techniques to modify your data in the following ways, and create some plots. <strong>Reminder:</strong> For each plot, give a brief explanation of what you are seeing. Be sure to label your axes nicely.</p>
+<ol style="list-style-type: decimal">
+<li><p>Add a column (variable) that contains the month the data was collected, and another column that contains the year the data was collected (in other words , separate the DATE into “MONTH” and “YEAR”.) See the <code>zoo</code> and <code>lubridate</code> packages for help on doing this.</p></li>
+<li><p>Create stacked boxplots for the TMAX variable, separated by month.</p></li>
+<li><p>Create stacked boxplots for the TMAX variable, separated by year (Hint: you may need to use <code>factor(YEAR)</code> in your ggplot in stead of just YEAR).</p></li>
+<li><p>Create a scatterplot with YEAR on the x-axis, and TMAX on the y-axis.</p></li>
+<li><p>Create a <em>line plot</em> (use <code>geom_line</code> instead of <code>geom_point</code>) with YEAR on the x-axis, TMAX on the y-axis, but using data only from February of each year. (You can also show both points <em>and</em> lines by including both <code>geom_point</code> and <code>geom_line</code> in the same <code>ggplot</code>.)</p></li>
+<li><p>Make a new data frame that looks year-by-year only. That is, your data frame should contain one row for each year, and contains the maximum temperate for the year, the total number of days above 70 for the year, and the total number of days above 90 for the year.</p></li>
+<li><p>Using this new data frame, make a line plot with YEAR on the x-axis, and either DX70 or DX90 on the y-axis (the choice will depend on how hot the weather typically is at your chosen weather station.)</p></li>
+</ol>
 </div>
 </div>
 
