@@ -18,7 +18,7 @@ house_2012_dem_reduced <- house_2012_dem[, c(4,22)]
 house_2012_dem_reduced <- 
   house_2012_dem_reduced %>%
   group_by(dist_id) %>%
-  summarise_each(funs(sum))
+  summarise(dem_votes = sum(dem_votes, na.rm = T))
 
 
 house_2012_rep <- 
@@ -53,19 +53,18 @@ house_2012_PA <- house_2012_reduced %>%
 median_dem_pct_PA <- median(house_2012_PA$pct_dem_votes)
 mean_dem_pct_PA <- mean(house_2012_PA$pct_dem_votes)
 
+statsholder <- data.frame(stat = c("Median",
+                                     "Mean"),
+                          value = c(median_dem_pct_PA,
+                                     mean_dem_pct_PA))
+
 house_2012_PA %>% 
   ggplot(aes(x = pct_dem_votes)) +
+  scale_color_brewer(palette = "Dark2") +
   geom_histogram(binwidth=1, color = "black", fill = "blue") + 
-  geom_vline(aes(xintercept = median_dem_pct_PA, 
-                 color = "Median",
-                 linetype = "Median"), 
-             show.legend = T) +
-  geom_vline(aes(xintercept = mean_dem_pct_PA, 
-                 color = "Mean",
-                 linetype = "Mean"), 
-             show.legend = T) +
-  scale_color_manual(values = c("Median"="red", "Mean"="forestgreen")) +
-  scale_linetype_manual(values=c("Median" = "twodash", "Mean" = "dotted")) +
+  geom_vline(data=statsholder ,aes(xintercept = value,
+                               linetype = stat,
+                               color = stat),size=1) +
   labs(title = "Percentage of Democratic votes by district",
        subtitle = "2012 Pennsylvania House race", 
        y = NULL,
