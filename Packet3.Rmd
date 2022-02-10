@@ -10,6 +10,8 @@ date: "*Last updated:* `r Sys.Date()`"
 output:
   rmdformats::downcute:
     downcute_theme: "chaos"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -27,4 +29,133 @@ Many data sets take some work to tidy up. There may be variables we want to igno
 
 For this exercise, read [this article](https://web.archive.org/web/20160223192726/https://www.nytimes.com/2015/12/06/opinion/sunday/let-math-save-our-democracy.html). As an activity, I'd like to  recreate the mean-median difference for the 2012 Pennsylvania House election.
 
-Start with this link: [download the results of the House elections from 1946-2020](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IG0UN2).
+Start with this link: [download the results of the House elections from 1976-2020](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IG0UN2). You should download the .zip file (You'll need to provide your name, email, and institution to download the data.) The .zip file should contain a .csv file and an .md file, place both of these in the working directory for your R project. (I'll also put these files on Canvas for you.)
+
+Now, let's import the file into R. You can do this by clicking on the file in RStudio, then choosing `Import Dataset...`. Before clicking import, notice that RStudio will just execute the R commands for you. Click `Import`, and spend a moment looking over the data set. Then, click on the "codebook" (the .md file) and `Preview` it for information on the variables of the data set. 
+
+Now, what we want to do is to transform this data set so that we can calculate the share of the votes in each district in the 2012 Pennsylvania House race. For simplicity, I'll just count the Democrat and Republican votes in each district, and ignore independent and third-party candidates.
+
+Run the code below one line at a time, and at each step, look at the new data set that we've just created. How do the various functions used here work?
+
+```{r tidying}
+house_2012 <- 
+  X1976_2020_house %>% 
+  filter(year==2012) %>% 
+  mutate(dist_id = paste(year, state_po, district), .after = state_po)
+
+house_2012_dem <- 
+  house_2012 %>%
+  filter(party == "DEMOCRAT") %>% 
+  mutate(dem_votes = candidatevotes)
+
+house_2012_dem_reduced <- house_2012_dem[, c(4,22)]
+
+house_2012_dem_reduced <- 
+  house_2012_dem_reduced %>%
+  group_by(dist_id) %>%
+  summarise_each(funs(sum))
+
+
+house_2012_rep <- 
+  house_2012 %>%
+  filter(party == "REPUBLICAN") %>% 
+  mutate(rep_votes = candidatevotes)
+
+house_2012_rep_reduced <- house_2012_rep[, c(4,22)]
+
+house_2012_rep_reduced <- 
+  house_2012_rep_reduced %>%
+  group_by(dist_id) %>%
+  summarise_each(funs(sum))
+
+house_2012_reduced <- 
+  full_join(house_2012_dem_reduced,house_2012_rep_reduced,by = "dist_id") %>% 
+  arrange(dist_id)
+
+house_2012_reduced <- 
+  house_2012_reduced %>% 
+  replace(is.na(.),0)
+
+house_2012_reduced <- 
+  house_2012_reduced %>% 
+  mutate(total_votes = rowSums(.[,2:3])) %>% 
+  mutate(pct_dem_votes = dem_votes / total_votes * 100) %>% 
+  mutate(pct_rep_votes = rep_votes / total_votes * 100)
+
+house_2012_PA <- house_2012_reduced %>% 
+  filter(grepl("PA", dist_id))
+
+median_dem_pct_PA <- median(house_2012_PA$pct_dem_votes)
+mean_dem_pct_PA <- mean(house_2012_PA$pct_dem_votes)
+```
+
+## More Visualizations
+
+Now, let's make some more plots. We can make a histogram again:
+
+```{r histogram}
+house_2012_PA %>% 
+  ggplot(aes(x = pct_dem_votes)) +
+  geom_histogram(binwidth=1, color = "black", fill = "blue") + 
+  geom_vline(aes(xintercept = median_dem_pct_PA, color = "Median"), 
+             linetype = "dashed", show.legend = T) +
+  geom_vline(aes(xintercept = mean_dem_pct_PA, color = "Mean"), 
+             linetype = "dotted", show.legend = T) +
+  scale_color_manual(name = "Measure",
+                     breaks = c("Median", "Mean"),
+                     values = c("Median"="red", "Mean"="forestgreen")) +
+  labs(title = "Percentage of Democratic votes by district",
+       subtitle = "2012 Pennsylvania House race", 
+       y = NULL,
+       x = "Percentage of Democratic votes")
+```
+
+Try changing the binwidth up a bit to make this picture prettier. Alternatively, try a `dotplot`:
+
+```{r dotplot}
+house_2012_PA %>% 
+  ggplot(aes(x = pct_dem_votes)) +
+  geom_dotplot(color = "black", fill = "blue") + 
+  geom_vline(aes(xintercept = median_dem_pct_PA, color = "Median"), 
+             linetype = "dashed", show.legend = T) +
+  geom_vline(aes(xintercept = mean_dem_pct_PA, color = "Mean"), 
+             linetype = "dotted", show.legend = T) +
+  scale_color_manual(name = "Measure",
+                     breaks = c("Median", "Mean"),
+                     values = c("Median"="red", "Mean"="forestgreen")) +
+  labs(title = "Percentage of Democratic votes by district",
+       subtitle = "2012 Pennsylvania House race", 
+       y = NULL,
+       x = "Percentage of Democratic votes") +
+  scale_y_continuous(breaks = NULL, labels = NULL) +
+  scale_x_continuous(breaks = seq(20,95,by = 5))
+```
+
+We can spread the dots out a bit by messing with the binwidth value:
+
+```{r dotplot2}
+house_2012_PA %>% 
+  ggplot(aes(x = pct_dem_votes)) +
+  geom_dotplot(binwidth = 0.05, dotsize= 30, color = "black", fill = "blue") + 
+  geom_vline(aes(xintercept = median_dem_pct_PA, color = "Median"), 
+             linetype = "dashed", show.legend = T) +
+  geom_vline(aes(xintercept = mean_dem_pct_PA, color = "Mean"), 
+             linetype = "dotted", show.legend = T) +
+  scale_color_manual(name = "Measure",
+                     breaks = c("Median", "Mean"),
+                     values = c("Median"="red", "Mean"="forestgreen")) +
+  labs(title = "Percentage of Democratic votes by district",
+       subtitle = "2012 Pennsylvania House race", 
+       y = NULL,
+       x = "Percentage of Democratic votes") +
+  scale_y_continuous(breaks = NULL, labels = NULL) +
+  scale_x_continuous(breaks = seq(20,95,by = 5))
+```
+
+## To Do: 
+
+Go to (https://www.ncdc.noaa.gov/cdo-web/datasets) and download a "Global Summary of the Month" data set. Select data that goes back at least 20 years, longer if possible, and search for a station with good data. (Airports are usually good for weather data.) When you check out your data, you'll be allowed to select variables: Choose variables for maximum temperature, number of days with max temp. above 70, and number of days with max temp above 90. You can also select other variables if you are interested. Be sure to download your data as a .csv file, not .pdf.
+
+You'll need to provide your email address, and the website will send you a link to download your data. 
+
+Once you have your data in hand, use the techniques to modify your data in the following ways:
