@@ -3,8 +3,8 @@ title: "Packet 3 - Tidying Data and More Visulatizations"
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
- encoding=encoding,
- output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+  encoding=encoding,
+  output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 author: "Todd CadwalladerOlsker"
 date: "*Last updated:* `r Sys.Date()`"
 output:
@@ -97,13 +97,16 @@ Now, let's make some more plots. We can make a histogram again:
 house_2012_PA %>% 
   ggplot(aes(x = pct_dem_votes)) +
   geom_histogram(binwidth=1, color = "black", fill = "blue") + 
-  geom_vline(aes(xintercept = median_dem_pct_PA, color = "Median"), 
-             linetype = "dashed", show.legend = T) +
-  geom_vline(aes(xintercept = mean_dem_pct_PA, color = "Mean"), 
-             linetype = "dotted", show.legend = T) +
-  scale_color_manual(name = "Measure",
-                     breaks = c("Median", "Mean"),
-                     values = c("Median"="red", "Mean"="forestgreen")) +
+  geom_vline(aes(xintercept = median_dem_pct_PA, 
+                 color = "Median",
+                 linetype = "Median"), 
+             show.legend = T) +
+  geom_vline(aes(xintercept = mean_dem_pct_PA, 
+                 color = "Mean",
+                 linetype = "Mean"), 
+             show.legend = T) +
+  scale_color_manual(values = c("Median"="red", "Mean"="forestgreen")) +
+  scale_linetype_manual(values=c("Median" = "twodash", "Mean" = "dotted")) +
   labs(title = "Percentage of Democratic votes by district",
        subtitle = "2012 Pennsylvania House race", 
        y = NULL,
