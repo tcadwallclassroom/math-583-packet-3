@@ -23,6 +23,8 @@ library(tidyverse)
 
 ## Tidying Data
 
+**Lightly read (https://r4ds.had.co.nz/tidy-data.html).**
+
 So far, we've been using the `openintro` data sets, which are great in may ways because they have already been *tidied*. That is, the data has been collected into a frame in such a way that it is easy for us to use.
 
 Many data sets take some work to tidy up. There may be variables we want to ignore, missing values we need to deal with, and so on. 
@@ -176,4 +178,6 @@ Once you have your data in hand, use the techniques to modify your data in the f
 
 7. Using this new data frame, make a line plot with YEAR on the x-axis, and either DX70 or DX90 on the y-axis (the choice will depend on how hot the weather typically is at your chosen weather station.)
 
+## Reading Assignment:
 
+Read [this editorial from the Journal of Statistics and Data Science Education.](https://www.tandfonline.com/doi/full/10.1080/26939169.2021.1906555). Write a short response around the question, "What classroom activities could I do differently in light of diversity, equity, and inclusion issues?" Give at least one specific example of an activity you have used, if possible.
