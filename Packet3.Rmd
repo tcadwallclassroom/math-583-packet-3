@@ -50,7 +50,13 @@ house_2012_dem <-
   filter(party == "DEMOCRAT") %>% 
   mutate(dem_votes = candidatevotes)
 
-house_2012_dem_reduced <- house_2012_dem[, c(4,22)]
+# Old Version: 
+# house_2012_dem_reduced <- house_2012_dem[, c(4,22)]
+# ----
+# Revised Version:
+house_2012_dem_reduced <- 
+  house_2012_dem %>% 
+  select(dist_id,dem_votes)
 
 house_2012_dem_reduced <- 
   house_2012_dem_reduced %>%
@@ -63,12 +69,18 @@ house_2012_rep <-
   filter(party == "REPUBLICAN") %>% 
   mutate(rep_votes = candidatevotes)
 
-house_2012_rep_reduced <- house_2012_rep[, c(4,22)]
+# Old Version:
+# house_2012_rep_reduced <- house_2012_rep[, c(4,22)]
+# ----
+# Revised Version:
+house_2012_rep_reduced <- 
+  house_2012_rep %>% 
+  select(dist_id,rep_votes)
 
 house_2012_rep_reduced <- 
   house_2012_rep_reduced %>%
   group_by(dist_id) %>%
-  summarise_each(funs(sum))
+  summarise(rep_votes = sum(rep_votes, na.rm = T))
 
 house_2012_reduced <- 
   full_join(house_2012_dem_reduced,house_2012_rep_reduced,by = "dist_id") %>% 
@@ -120,19 +132,16 @@ Try changing the binwidth up a bit to make this picture prettier. Alternatively,
 house_2012_PA %>% 
   ggplot(aes(x = pct_dem_votes)) +
   geom_dotplot(color = "black", fill = "blue") + 
-  geom_vline(aes(xintercept = median_dem_pct_PA, color = "Median"), 
-             linetype = "dashed", show.legend = T) +
-  geom_vline(aes(xintercept = mean_dem_pct_PA, color = "Mean"), 
-             linetype = "dotted", show.legend = T) +
-  scale_color_manual(name = "Measure",
-                     breaks = c("Median", "Mean"),
-                     values = c("Median"="red", "Mean"="forestgreen")) +
+  geom_vline(data=statsholder ,aes(xintercept = value,
+                               linetype = stat,
+                               color = stat),size=1) +
   labs(title = "Percentage of Democratic votes by district",
        subtitle = "2012 Pennsylvania House race", 
        y = NULL,
        x = "Percentage of Democratic votes") +
   scale_y_continuous(breaks = NULL, labels = NULL) +
-  scale_x_continuous(breaks = seq(20,95,by = 5))
+  scale_x_continuous(breaks = seq(20,95,by = 5)) +
+  scale_color_brewer(palette = "Dark2")
 ```
 
 We can spread the dots out a bit by messing with the binwidth value:
@@ -141,42 +150,43 @@ We can spread the dots out a bit by messing with the binwidth value:
 house_2012_PA %>% 
   ggplot(aes(x = pct_dem_votes)) +
   geom_dotplot(binwidth = 0.05, dotsize= 30, color = "black", fill = "blue") + 
-  geom_vline(aes(xintercept = median_dem_pct_PA, color = "Median"), 
-             linetype = "dashed", show.legend = T) +
-  geom_vline(aes(xintercept = mean_dem_pct_PA, color = "Mean"), 
-             linetype = "dotted", show.legend = T) +
-  scale_color_manual(name = "Measure",
-                     breaks = c("Median", "Mean"),
-                     values = c("Median"="red", "Mean"="forestgreen")) +
+  geom_vline(data=statsholder ,aes(xintercept = value,
+                               linetype = stat,
+                               color = stat),size=1) +
   labs(title = "Percentage of Democratic votes by district",
        subtitle = "2012 Pennsylvania House race", 
        y = NULL,
        x = "Percentage of Democratic votes") +
   scale_y_continuous(breaks = NULL, labels = NULL) +
-  scale_x_continuous(breaks = seq(20,95,by = 5))
+  scale_x_continuous(breaks = seq(20,95,by = 5)) +
+  scale_color_brewer(palette = "Dark2")
 ```
 
 ## To Do: 
 
-Go to (https://www.ncdc.noaa.gov/cdo-web/datasets) and download a "Global Summary of the Month" data set. Select data that goes back at least 20 years, longer if possible, and search for a station with good data. (Airports are usually good for weather data.) When you check out your data, you'll be allowed to select variables: Choose variables for maximum temperature (TMAX), number of days with max temp. above 70 (DX70), and number of days with max temp above 90 (DX90). You can also select other variables if you are interested. Be sure to download your data as a .csv file.
+For this assignment, we want to explore the question, "Has my local area gotten hotter over the past 20 years?" In other words, we are looking at "local warming" (rather than global warming). We'll explore this question in a couple of different ways.
+
+Go to (https://www.ncdc.noaa.gov/cdo-web/datasets) and download a "Global Summary of the Month" data set. You can look at a station near where you live, or maybe another location that has some significance to you. Select data that goes back at least 20 years, longer if possible, and search for a station with good data. (Airports are usually good for weather data.) When you check out your data, you'll be allowed to select variables: Choose variables for maximum temperature (TMAX), number of days with max temp. above 70 (DX70), and number of days with max temp above 90 (DX90). You can also select other variables if you are interested. Be sure to download your data as a .csv file.
 
 You'll need to provide your email address, and the website will send you a link to download your data. 
 
-Once you have your data in hand, use the techniques to modify your data in the following ways, and create some plots. **Reminder:** For each plot, give a brief explanation of what you are seeing. Be sure to label your axes nicely.
+Once you have your data in hand, use R to tidy and transform your data. Your .pdf file should contain all of the following. For this assignment, *do not explain what you are seeing/doing in each step individually.* Instead, I want you to tell the story of the data at the end of the assignment.
 
-1. Add a column (variable) that contains the month the data was collected, and another column that contains the year the data was collected (in other words , separate the DATE into "MONTH" and "YEAR".) See the `zoo` and `lubridate` packages for help on doing this.
+a. Add a column (variable) that contains the month the data was collected, and another column that contains the year the data was collected (in other words , separate the DATE into "MONTH" and "YEAR".) See the `zoo` and `lubridate` packages for help on doing this.
 
-2. Create stacked boxplots for the TMAX variable, separated by month.
+b. Create stacked boxplots for the TMAX variable, separated by month. Normally, it would be messy to have this many stacked boxplots, but don't worry about it here.
 
-3. Create stacked boxplots for the TMAX variable, separated by year (Hint: you may need to use `factor(YEAR)` in your ggplot in stead of just YEAR).
+c. Create stacked boxplots for the TMAX variable, separated by year (Hint: you may need to use `factor(YEAR)` in your ggplot instead of just YEAR). 
 
-4. Create a scatterplot with YEAR on the x-axis, and TMAX on the y-axis.
+d. Create a scatterplot with YEAR on the x-axis, and TMAX on the y-axis.
 
-5. Create a *line plot* (use `geom_line` instead of `geom_point`) with YEAR on the x-axis, TMAX on the y-axis, but using data only from February of each year. (You can also show both points *and* lines by including both `geom_point` and `geom_line` in the same `ggplot`.)
+e. Create a *line plot* (use `geom_line` instead of `geom_point`) with YEAR on the x-axis, TMAX on the y-axis, but using data only from February of each year. (You can also show both points *and* lines by including both `geom_point` and `geom_line` in the same `ggplot`.) 
 
-6. Make a new data frame that looks year-by-year only. That is, your data frame should contain one row for each year, and contains the maximum temperate for the year, the total number of days above 70 for the year, and the total number of days above 90 for the year.
+f. Make a new data frame that looks year-by-year only. That is, your data frame should contain one row for each year, and contains the maximum temperate for the year, the total number of days above 70 for the year, and the total number of days above 90 for the year.
 
-7. Using this new data frame, make a line plot with YEAR on the x-axis, and either DX70 or DX90 on the y-axis (the choice will depend on how hot the weather typically is at your chosen weather station.)
+g. Using this new data frame, make a line plot with YEAR on the x-axis, and either DX70 or DX90 on the y-axis (the choice will depend on how hot the weather typically is at your chosen weather station.)
+
+h. Finally, tell the story of your data. Does the maximum temperature for the year appear to be increasing over time? Does February seem to be hotter now than it was 20 years ago? Does there seem to have more hot days (over 70, or over 90) than there were 20 years ago? Remember that for now, we are just exploring the data, so just looking at the plots (without any further analysis) is fine.
 
 ## Reading Assignment:
 
