@@ -137,7 +137,7 @@
       <p class="authors">
            <span class="glyphicon glyphicon-user"></span> Todd CadwalladerOlsker
       </p>
-         <p class="date"><span class="glyphicon glyphicon-calendar"></span> <em>Last updated:</em> 2022-02-15</p>
+         <p class="date"><span class="glyphicon glyphicon-calendar"></span> <em>Last updated:</em> 2022-02-16</p>
            
 
    
@@ -207,7 +207,7 @@ house_2012_reduced &lt;-
 
 house_2012_reduced &lt;- 
   house_2012_reduced %&gt;% 
-  mutate(total_votes = rowSums(.[,2:3])) %&gt;% 
+  mutate(total_votes = dem_votes + rep_votes) %&gt;% # Note: Easier code here
   mutate(pct_dem_votes = dem_votes / total_votes * 100) %&gt;% 
   mutate(pct_rep_votes = rep_votes / total_votes * 100)
 
