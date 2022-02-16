@@ -1,6 +1,6 @@
 # https://www.ncdc.noaa.gov/cdo-web/datasets
 
-library(readr)
+library(tidyverse)
 X1976_2020_house <- read_csv("1976-2020-house.csv")
 
 house_2012 <- 
@@ -43,7 +43,7 @@ house_2012_reduced <-
 
 house_2012_reduced <- 
   house_2012_reduced %>% 
-  mutate(total_votes = rowSums(.[,2:3])) %>% 
+  mutate(total_votes = (dem_votes + rep_votes)) %>% 
   mutate(pct_dem_votes = dem_votes / total_votes * 100) %>% 
   mutate(pct_rep_votes = rep_votes / total_votes * 100)
 
@@ -69,3 +69,31 @@ house_2012_PA %>%
        subtitle = "2012 Pennsylvania House race", 
        y = NULL,
        x = "Percentage of Democratic votes")
+
+# ---- keep the state more general
+
+state = "CA"
+
+house_2012_state <- house_2012_reduced %>% 
+  filter(grepl(state, dist_id))
+
+median_dem_pct_state <- median(house_2012_state$pct_dem_votes)
+mean_dem_pct_state <- mean(house_2012_state$pct_dem_votes)
+
+statsholder <- data.frame(stat = c("Median",
+                                   "Mean"),
+                          value = c(median_dem_pct_state,
+                                    mean_dem_pct_state))
+
+house_2012_state %>% 
+  ggplot(aes(x = pct_dem_votes)) +
+  scale_color_brewer(palette = "Dark2") +
+  geom_histogram(binwidth=1, color = "black", fill = "blue") + 
+  geom_vline(data=statsholder ,aes(xintercept = value,
+                                   linetype = stat,
+                                   color = stat),size=1) +
+  labs(title = "Percentage of Democratic votes by district",
+       subtitle = paste("2012", state, "House race"), 
+       y = NULL,
+       x = "Percentage of Democratic votes")
+

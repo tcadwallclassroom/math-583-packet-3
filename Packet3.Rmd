@@ -92,7 +92,7 @@ house_2012_reduced <-
 
 house_2012_reduced <- 
   house_2012_reduced %>% 
-  mutate(total_votes = rowSums(.[,2:3])) %>% 
+  mutate(total_votes = dem_votes + rep_votes) %>% # Note: Easier code here
   mutate(pct_dem_votes = dem_votes / total_votes * 100) %>% 
   mutate(pct_rep_votes = rep_votes / total_votes * 100)
 
